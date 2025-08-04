@@ -10,23 +10,17 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    lib: {
-      entry: path.resolve(__dirname, 'src/admin-editor.jsx'),
-      name: 'VedaContentEditor',
-      fileName: () => 'admin-editor-build.js',
-      formats: ['iife'],
-    },
+    // We remove the complex `lib` and `format` options.
+    // Vite will now build modern ES Modules by default.
     rollupOptions: {
-      external: [],
-      output: {
-        globals: {},
-        assetFileNames: (assetInfo) => {
-          if (assetInfo.name === 'style.css') {
-            return 'admin-editor-build.css';
-          }
-          return assetInfo.name;
-        },
+      input: {
+        'admin-editor': path.resolve(__dirname, 'src/admin-editor.jsx'),
+        'story-renderer': path.resolve(__dirname, 'src/story-renderer.jsx'),
       },
-    },
+      output: {
+        // We only need to ensure the filenames are predictable.
+        entryFileNames: `[name].build.js`,
+      }
+    }
   },
 });
