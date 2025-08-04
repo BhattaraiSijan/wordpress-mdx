@@ -2,11 +2,12 @@
 /**
  * Plugin Name: VEDA Story Editor
  * Description: UI-only editor for VEDA Stories using MDX Editor.
- * Version: 1.3 
+ * Version: 2.0
  */
 
 require_once plugin_dir_path(__FILE__) . 'post-type.php';
 
+// This section remains unchanged. It handles loading the editor in the admin panel.
 add_action('admin_enqueue_scripts', function ($hook) {
     global $post;
     
@@ -44,6 +45,7 @@ add_action('admin_enqueue_scripts', function ($hook) {
     }
 });
 
+// This section remains unchanged. It adds the editor container to the page.
 add_action('edit_form_after_title', function ($post) { 
     if ($post->post_type !== 'veda_story') return;
 
@@ -67,6 +69,7 @@ add_action('edit_form_after_title', function ($post) {
     </style>';
 });
 
+// This section remains unchanged. It handles saving the raw MDX content.
 add_action('save_post', function($post_id) {
     if (get_post_type($post_id) !== 'veda_story') return;
     if (!current_user_can('edit_post', $post_id)) return;
@@ -79,6 +82,7 @@ add_action('save_post', function($post_id) {
     }
 });
 
+// This section remains unchanged. It handles the ajax auto-save.
 add_action('wp_ajax_veda_auto_save', 'veda_auto_save_story');
 function veda_auto_save_story() {
     if (!wp_verify_nonce($_POST['nonce'], 'veda_editor_nonce')) {
@@ -103,6 +107,7 @@ function veda_auto_save_story() {
     ]);
 }
 
+// This section remains unchanged. It handles the admin info meta box.
 add_action('add_meta_boxes', function() {
     add_meta_box(
         'veda-story-info',
@@ -129,55 +134,51 @@ function veda_story_info_callback($post) {
           </div>';
 }
 
-function convert_mdx_to_html($mdx_content) {
-    $html = $mdx_content;
-    
-    // 1. Process fenced code blocks first, escaping their content
-    $html = preg_replace_callback(
-        '/```(\w*)\n?(.*?)```/s',
-        function ($matches) {
-            // Escape the code content to prevent it from being interpreted as HTML
-            $code_content = htmlspecialchars(trim($matches[2]));
-            return "<pre><code>" . $code_content . "</code></pre>";
-        },
-        $html
-    );
+// ### DELETED ###
+// The `convert_mdx_to_html` function has been removed.
+// The Node.js service will now handle all rendering logic.
 
-    // 2. Process images
-    $html = preg_replace('/!\[(.*?)\]\((.*?)\)/', '<img src="$2" alt="$1" style="max-width: 100%; height: auto; border-radius: 4px;">', $html);
-    
-    // 3. Process headings
-    $html = preg_replace('/^###\s+(.*$)/m', '<h3>$1</h3>', $html);
-    $html = preg_replace('/^##\s+(.*$)/m', '<h2>$1</h2>', $html);
-    $html = preg_replace('/^#\s+(.*$)/m', '<h1>$1</h1>', $html);
-    
-    // 4. Process inline elements like bold, italic, and inline code
-    $html = preg_replace('/\*\*(.*?)\*\*/s', '<strong>$1</strong>', $html);
-    $html = preg_replace('/\*(.*?)\*/s', '<em>$1</em>', $html);
-    $html = preg_replace('/`([^`]+)`/', '<code>$1</code>', $html);
-    
-    // 5. Convert newlines to <br> tags for paragraph breaks
-    $html = nl2br(trim($html));
-    
-    // 6. Clean up extra <br> tags that nl2br might add after block elements
-    $html = str_replace(["</pre><br />", "</h3><br />", "</h2><br />", "<h1><br />"], ["</pre>", "</h3>", "</h2>", "</h1>"], $html);
 
-    return $html;
-}
-
+// ### REWRITTEN ###
+// This function now calls the external Node.js rendering service.
 add_filter('the_content', function($content) {
     global $post;
     
-    if (!$post || $post->post_type !== 'veda_story') {
+    // Only apply this to single 'veda_story' posts.
+    if (!$post || !is_singular('veda_story')) {
         return $content;
     }
     
     $mdx_content = get_post_meta($post->ID, '_veda_story_content', true);
     
-    if (!empty($mdx_content)) {
-        $html_content = convert_mdx_to_html($mdx_content);
-        return '<div class="veda-story-content">' . $html_content . '</div>';
+    if (empty($mdx_content)) {
+        return $content; // Return default content if our meta field is empty.
     }
+
+    // Define the URL of your Node.js rendering service.
+    // For production, this should come from a secure option or environment variable.
+   define('VEDA_RENDERER_URL', 'http://host.docker.internal:4000/render');
+
+    // Make a POST request to the rendering service.
+    $response = wp_remote_post(VEDA_RENDERER_URL, [
+        'headers' => ['Content-Type' => 'application/json; charset=utf-8'],
+        'body'    => json_encode(['mdxContent' => $mdx_content]),
+        'method'  => 'POST',
+        'timeout' => 20, // Give the renderer some time to work.
+    ]);
+
+    // Check for errors. If the service is down or fails, show an error message.
+    if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+        // You can log the error for debugging if you want.
+        // error_log('VEDA MDX Render Error: ' . print_r($response, true));
+        return '<div class="veda-story-content-error">Error: The story content could not be displayed at this time. Please contact a site administrator.</div>';
+    }
+
+    // Decode the JSON response from the service.
+    $body = json_decode(wp_remote_retrieve_body($response), true);
     
-    return $content;
+    // Extract the 'html' key from the response and display it.
+    $html_content = $body['html'] ?? '<div class="veda-story-content-error">Error: Invalid response from the rendering service.</div>';
+
+    return '<div class="veda-story-content">' . $html_content . '</div>';
 });
