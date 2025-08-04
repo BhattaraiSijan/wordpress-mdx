@@ -1,0 +1,34 @@
+{
+  "name": "veda-story-editor",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite --open",
+    "start": "vite --open",
+    "start-local": "vite --config ../../../vite.config.local.mjs",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@mdxeditor/editor": "^3.40.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "sugar-high": "^0.9.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "buffer": "^6.0.3",
+    "os-browserify": "^0.3.0",
+    "parcel": "^2.11.0",
+    "process": "^0.11.10",
+    "stream-browserify": "^3.0.0",
+    "string_decoder": "^1.3.0",
+    "util": "^0.12.5",
+    "vite": "^7.0.6"
+  },
+  "alias": {
+    "stream": "stream-browserify",
+    "os": "os-browserify",
+    "process": "process/browser",
+    "string_decoder": "string_decoder"
+  }
+}
