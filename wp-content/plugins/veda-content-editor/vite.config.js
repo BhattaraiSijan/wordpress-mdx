@@ -10,8 +10,6 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    // We remove the complex `lib` and `format` options.
-    // Vite will now build modern ES Modules by default.
     rollupOptions: {
       input: {
         'admin-editor': path.resolve(__dirname, 'src/admin-editor.jsx'),

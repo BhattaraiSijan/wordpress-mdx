@@ -19,18 +19,15 @@ import {
     InsertCodeBlock,
     Separator
 } from '@mdxeditor/editor';
+import EditorPage from '@nasa-impact/mdx-editor-editor';
 
-// Import CSS explicitly
 import '@mdxeditor/editor/style.css';
 
-console.log('🚀 VEDA Story Editor with Save/Load functionality');
-
-// Inject MDXEditor CSS if not already loaded
+// // Inject MDXEditor CSS if not already loaded------Need to figure out a better way
 function injectMDXEditorCSS() {
     // Check if CSS is already loaded
     const existingLink = document.querySelector('link[href*="mdxeditor"]');
     if (existingLink) {
-        console.log('✅ MDXEditor CSS already loaded');
         return;
     }
     
@@ -38,12 +35,9 @@ function injectMDXEditorCSS() {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = 'https://unpkg.com/@mdxeditor/editor@latest/style.css';
-    link.onload = () => console.log('✅ MDXEditor CSS loaded from CDN');
-    link.onerror = () => console.warn('❌ Failed to load MDXEditor CSS from CDN');
     document.head.appendChild(link);
 }
 
-// Inject CSS when script loads
 injectMDXEditorCSS();
 
 function VEDAStoryEditor({ initialContent, postId, onSave }) {
@@ -77,21 +71,18 @@ function VEDAStoryEditor({ initialContent, postId, onSave }) {
             if (result.success) {
                 setSaveStatus('saved');
                 setLastSaved(new Date());
-                console.log('✅ Auto-saved successfully');
             } else {
                 setSaveStatus('error');
-                console.error('❌ Auto-save failed:', result);
             }
         } catch (error) {
             setSaveStatus('error');
-            console.error('❌ Auto-save error:', error);
         }
     }, [postId, initialContent]);
 
     // Manual save functionality
     const manualSave = React.useCallback(async () => {
         if (!content) return;
-        
+        console.log("Content to save:", content);
         setSaveStatus('saving');
         
         try {
@@ -147,12 +138,10 @@ function VEDAStoryEditor({ initialContent, postId, onSave }) {
             hiddenField.value = newContent;
         }
         
-        // Clear existing timeout
         if (saveTimeoutRef.current) {
             clearTimeout(saveTimeoutRef.current);
         }
         
-        // Auto-save after 3 seconds of inactivity
         saveTimeoutRef.current = setTimeout(() => {
             autoSave(newContent);
         }, 3000);
@@ -272,24 +261,18 @@ function VEDAStoryEditor({ initialContent, postId, onSave }) {
 
 function initEditor() {
     const container = document.getElementById('veda-editor-root');
-    console.log('📦 Container found:', !!container);
     
     if (!container) {
         console.warn('❌ Container #veda-editor-root not found');
         return;
     }
 
-    console.log('✨ Initializing VEDA Story Editor with Save/Load');
     
     // Get data from container and WordPress
     const postId = parseInt(container.dataset.postId);
     const initialContent = window.vedaEditor?.currentContent || container.dataset.initial || '# New VEDA Story\n\nStart writing...';
-    
-    console.log('📖 Loading story for post ID:', postId);
-    console.log('📝 Initial content length:', initialContent.length);
 
     const handleSave = (content) => {
-        console.log('💾 Story saved, length:', content.length);
         
         // Update WordPress publish button to show saved state
         const publishButton = document.getElementById('publish');
@@ -306,14 +289,10 @@ function initEditor() {
                 postId: postId,
                 onSave: handleSave
             })
-        );
-        console.log('✅ VEDA Story Editor initialized successfully');
-        
-        // Clear the loading message
+        );        
         container.style.minHeight = 'auto';
         
     } catch (error) {
-        console.error('❌ Failed to initialize VEDA Story Editor:', error);
         container.innerHTML = `
             <div style="padding: 20px; background: #fee; border: 1px solid #f00; color: #800;">
                 <strong>Editor Error:</strong> ${error.message}<br>
@@ -323,11 +302,9 @@ function initEditor() {
     }
 }
 
-// Initialize when everything is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initEditor);
 } else {
     initEditor();
 }
 
-console.log('✅ VEDA Story Editor script loaded');
