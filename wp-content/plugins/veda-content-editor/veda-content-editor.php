@@ -8,17 +8,11 @@
 require_once plugin_dir_path(__FILE__) . 'post-type.php';
 
 // Register story content meta so it is available via the REST API
-add_action('init', function() {
+add_action('init', function () {
     register_post_meta('veda_story', '_veda_story_content', [
-        'show_in_rest' => [
-            'name' => 'veda_story_content',
-            'schema' => [
-                'type' => 'string',
-            ],
-        ],
+        'show_in_rest' => true,
         'single' => true,
         'type' => 'string',
-        'auth_callback' => '__return_true',
     ]);
 });
 
