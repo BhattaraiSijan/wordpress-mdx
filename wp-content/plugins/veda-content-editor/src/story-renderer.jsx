@@ -77,9 +77,9 @@ function StoryRenderer({ mdxContent, postId }) {
           console.log('[VEDA] Using vedaEditor.currentContent');
         }
         // Source 3: Fetch from REST API
-        else if (postId && window.vedaEditor?.restNonce) {
+        else if (postId && window.vedaStoryData?.restNonce) {
           console.log('[VEDA] Attempting REST API fetch...');
-          const response = await fetch(`/wp-json/wp/v2/posts/${postId}?_wpnonce=${window.vedaEditor.restNonce}`);
+          const response = await fetch(`/wp-json/wp/v2/posts/${postId}?_wpnonce=${window.vedaStoryData.restNonce}`);
           
           if (response.ok) {
             const postData = await response.json();
@@ -88,13 +88,13 @@ function StoryRenderer({ mdxContent, postId }) {
           }
         }
         // Source 4: Try AJAX endpoint
-        else if (postId && window.vedaEditor?.ajaxUrl) {
+        else if (postId && window.vedaStoryData?.ajaxUrl) {
           console.log('[VEDA] Attempting AJAX fetch...');
           const formData = new FormData();
           formData.append('action', 'get_veda_story_content');
           formData.append('post_id', postId);
-          
-          const response = await fetch(window.vedaEditor.ajaxUrl, {
+
+          const response = await fetch(window.vedaStoryData.ajaxUrl, {
             method: 'POST',
             body: formData
           });
