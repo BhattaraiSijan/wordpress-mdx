@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { evaluate } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
 
+/* global vedaStoryData */
+
 console.log('[VEDA] Story renderer loaded');
 
 const Highlight = ({ color = 'yellow', children }) => {
@@ -57,7 +59,7 @@ function StoryRenderer({ mdxContent, postId }) {
       console.log('[VEDA] No content provided, attempting to fetch from WordPress...');
       console.log('[VEDA] Post ID:', postId);
       console.log('[VEDA] Available data sources:', {
-        vedaStoryData: window.vedaStoryData,
+        vedaStoryData,
         vedaEditor: window.vedaEditor,
         postData: window.postData
       });
@@ -67,8 +69,8 @@ function StoryRenderer({ mdxContent, postId }) {
         let content = null;
 
         // Source 1: vedaStoryData (preferred)
-        if (window.vedaStoryData?.content) {
-          content = window.vedaStoryData.content;
+        if (vedaStoryData?.content) {
+          content = vedaStoryData.content;
           console.log('[VEDA] Using vedaStoryData.content');
         }
         // Source 2: vedaEditor (fallback)
@@ -77,9 +79,9 @@ function StoryRenderer({ mdxContent, postId }) {
           console.log('[VEDA] Using vedaEditor.currentContent');
         }
         // Source 3: Fetch from REST API
-        else if (postId && window.vedaStoryData?.restNonce) {
+        else if (postId && vedaStoryData?.restNonce) {
           console.log('[VEDA] Attempting REST API fetch...');
-          const response = await fetch(`/wp-json/wp/v2/posts/${postId}?_wpnonce=${window.vedaStoryData.restNonce}`);
+          const response = await fetch(`/wp-json/wp/v2/posts/${postId}?_wpnonce=${vedaStoryData.restNonce}`);
           
           if (response.ok) {
             const postData = await response.json();
@@ -88,13 +90,13 @@ function StoryRenderer({ mdxContent, postId }) {
           }
         }
         // Source 4: Try AJAX endpoint
-        else if (postId && window.vedaStoryData?.ajaxUrl) {
+        else if (postId && vedaStoryData?.ajaxUrl) {
           console.log('[VEDA] Attempting AJAX fetch...');
           const formData = new FormData();
           formData.append('action', 'get_veda_story_content');
           formData.append('post_id', postId);
 
-          const response = await fetch(window.vedaStoryData.ajaxUrl, {
+          const response = await fetch(vedaStoryData.ajaxUrl, {
             method: 'POST',
             body: formData
           });
@@ -193,9 +195,9 @@ function StoryRenderer({ mdxContent, postId }) {
           <pre style={{ fontSize: '12px', marginTop: '10px' }}>
             {JSON.stringify({
               postId,
-              hasVedaStoryData: !!window.vedaStoryData,
+              hasVedaStoryData: !!vedaStoryData,
               hasVedaEditor: !!window.vedaEditor,
-              vedaStoryDataContent: window.vedaStoryData?.content ? 'Present' : 'Missing',
+              vedaStoryDataContent: vedaStoryData?.content ? 'Present' : 'Missing',
               vedaEditorContent: window.vedaEditor?.currentContent ? 'Present' : 'Missing'
             }, null, 2)}
           </pre>
@@ -230,14 +232,14 @@ function initRenderer() {
   }
 
   // Get content from multiple possible sources
-  const content = window.vedaStoryData?.content || 
-                 window.vedaEditor?.currentContent || 
-                 container.dataset.content || 
+  const content = vedaStoryData?.content ||
+                 window.vedaEditor?.currentContent ||
+                 container.dataset.content ||
                  '';
 
   // Get post ID from multiple sources
   const postId = parseInt(container.dataset.postId, 10) || 
-                parseInt(window.vedaStoryData?.postId, 10) || 
+                parseInt(vedaStoryData?.postId, 10) ||
                 parseInt(window.vedaEditor?.postId, 10) ||
                 null;
 
@@ -246,7 +248,7 @@ function initRenderer() {
     contentLength: content.length,
     postId: postId,
     sources: {
-      vedaStoryData: !!window.vedaStoryData,
+      vedaStoryData: !!vedaStoryData,
       vedaEditor: !!window.vedaEditor,
       containerData: !!container.dataset.content
     }

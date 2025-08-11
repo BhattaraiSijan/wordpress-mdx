@@ -147,9 +147,10 @@ add_action('wp_enqueue_scripts', function() {
 
             $mdx_content = get_post_meta($post->ID, '_veda_story_content', true);
             wp_localize_script('veda-story-renderer', 'vedaStoryData', [
-                'content' => $mdx_content ?? '',
-                'postId' => $post->ID,
-                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'content'   => $mdx_content ?? '',
+                'postId'    => $post->ID,
+                // Expose AJAX endpoint and REST nonce to the renderer
+                'ajaxUrl'   => admin_url('admin-ajax.php'),
                 'restNonce' => wp_create_nonce('wp_rest'),
             ]);
         }
