@@ -19,7 +19,6 @@ import {
     InsertCodeBlock,
     Separator
 } from '@mdxeditor/editor';
-import EditorPage from '@sijanbhattarai/mdx-editor-editor';
 
 import '@mdxeditor/editor/style.css';
 
