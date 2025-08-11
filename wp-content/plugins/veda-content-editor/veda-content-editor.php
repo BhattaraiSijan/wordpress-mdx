@@ -53,6 +53,7 @@ add_action('admin_enqueue_scripts', function ($hook) {
             'postId' => $post->ID,
             'restNonce' => wp_create_nonce('wp_rest'),
             'ajaxUrl' => admin_url('admin-ajax.php'),
+            'ajaxNonce' => wp_create_nonce('veda_auto_save'),
             'saveEndpoint' => admin_url('admin-ajax.php?action=veda_save_story'),
             'currentContent' => get_post_meta($post->ID, '_veda_story_content', true) ?: ''
         ]);
@@ -86,6 +87,25 @@ add_action('save_post', function($post_id) {
         update_post_meta($post_id, '_veda_story_content', wp_unslash($_POST['veda_story_content']));
     }
 });
+
+add_action('wp_ajax_veda_auto_save', 'veda_auto_save_handler');
+add_action('wp_ajax_nopriv_veda_auto_save', 'veda_auto_save_handler');
+function veda_auto_save_handler() {
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'veda_auto_save')) {
+        wp_send_json_error('Invalid nonce.');
+    }
+
+    $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+    if (!$post_id || !current_user_can('edit_post', $post_id)) {
+        wp_send_json_error('Unauthorized.');
+    }
+
+    $content = isset($_POST['content']) ? wp_unslash($_POST['content']) : '';
+    update_post_meta($post_id, '_veda_story_content', $content);
+    update_post_meta($post_id, '_veda_story_autosave_time', time());
+
+    wp_send_json_success(['message' => 'Auto-saved', 'timestamp' => current_time('mysql')]);
+}
 
 add_action('wp_ajax_veda_save_story', 'veda_manual_save_story');
 function veda_manual_save_story() {
