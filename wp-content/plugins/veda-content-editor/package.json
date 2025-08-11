@@ -11,6 +11,13 @@
   "dependencies": {
     "@mdx-js/mdx": "^3.1.0",
     "@mdxeditor/editor": "^3.40.1",
+    "@sijanbhattarai/mdx-editor-datasets": "^1.0.32",
+    "@sijanbhattarai/mdx-editor-editor": "^1.0.32",
+    "@teamimpact/veda-ui": "^6.10.3",
+    "@trussworks/react-uswds": "^10.0.2",
+    "dev-veda-content-editor": "^0.1.17",
+    "focus-trap-react": "^11.0.4",
+    "mdast-util-gfm": "^3.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sugar-high": "^0.9.3"
