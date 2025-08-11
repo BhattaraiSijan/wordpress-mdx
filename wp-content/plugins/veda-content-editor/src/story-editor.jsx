@@ -61,6 +61,7 @@ function VEDAEditorHost({ initialContent, postId }) {
     try {
       const response = await fetch(window.vedaEditor?.saveEndpoint || window.vedaEditor?.ajaxUrl, {
         method: 'POST',
+        credentials: 'same-origin',
         headers: {
           'Content-Type': 'application/json',
           'X-WP-Nonce': window.vedaEditor?.restNonce || ''

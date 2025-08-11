@@ -54,6 +54,7 @@ function VEDAStoryEditor({ initialContent, postId, onSave }) {
         try {
             const response = await fetch(window.vedaEditor.ajaxUrl, {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
@@ -86,7 +87,8 @@ function VEDAStoryEditor({ initialContent, postId, onSave }) {
         
         try {
             const response = await fetch(window.vedaEditor.saveEndpoint, {
-                method: 'POST',
+                  method: 'POST',
+                  credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-WP-Nonce': window.vedaEditor.restNonce
