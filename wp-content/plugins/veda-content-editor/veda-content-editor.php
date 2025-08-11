@@ -7,6 +7,21 @@
 
 require_once plugin_dir_path(__FILE__) . 'post-type.php';
 
+// Register story content meta so it is available via the REST API
+add_action('init', function() {
+    register_post_meta('veda_story', '_veda_story_content', [
+        'show_in_rest' => [
+            'name' => 'veda_story_content',
+            'schema' => [
+                'type' => 'string',
+            ],
+        ],
+        'single' => true,
+        'type' => 'string',
+        'auth_callback' => '__return_true',
+    ]);
+});
+
 add_action('admin_enqueue_scripts', function ($hook) {
     global $post;
     if ('post.php' !== $hook && 'post-new.php' !== $hook) return;
@@ -134,6 +149,8 @@ add_action('wp_enqueue_scripts', function() {
             wp_localize_script('veda-story-renderer', 'vedaStoryData', [
                 'content' => $mdx_content ?? '',
                 'postId' => $post->ID,
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'restNonce' => wp_create_nonce('wp_rest'),
             ]);
         }
     }
